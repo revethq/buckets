@@ -1,0 +1,74 @@
+[versions]
+quarkus = "3.31.1"
+kotlin = "2.3.10"
+ktlint = "14.0.1"
+jandex = "3.2.0"
+mockk = "1.13.8"
+aws-sdk = "2.31.64"
+quarkus-amazon-services = "3.31.1"
+google-cloud-storage = "2.49.0"
+revet-iam = "0.1.15"
+revet-core = "0.1.0"
+jakarta-cdi = "4.0.1"
+jakarta-inject = "2.0.1"
+jakarta-ws-rs = "3.1.0"
+jakarta-annotation = "2.1.1"
+jakarta-transaction = "2.0.1"
+microprofile-openapi = "3.1.1"
+microprofile-jwt = "2.1"
+
+[libraries]
+quarkus-bom = { module = "io.quarkus:quarkus-bom", version.ref = "quarkus" }
+quarkus-amazon-services-bom = { module = "io.quarkus.platform:quarkus-amazon-services-bom", version.ref = "quarkus-amazon-services" }
+revet-core = { module = "com.revethq:revet-core", version.ref = "revet-core" }
+
+# Quarkus (versions from BOM)
+quarkus-kotlin = { module = "io.quarkus:quarkus-kotlin" }
+quarkus-arc = { module = "io.quarkus:quarkus-arc" }
+quarkus-rest = { module = "io.quarkus:quarkus-rest" }
+quarkus-rest-jackson = { module = "io.quarkus:quarkus-rest-jackson" }
+quarkus-hibernate-orm-panache-kotlin = { module = "io.quarkus:quarkus-hibernate-orm-panache-kotlin" }
+quarkus-jdbc-postgresql = { module = "io.quarkus:quarkus-jdbc-postgresql" }
+quarkus-smallrye-openapi = { module = "io.quarkus:quarkus-smallrye-openapi" }
+quarkus-smallrye-health = { module = "io.quarkus:quarkus-smallrye-health" }
+quarkus-smallrye-jwt = { module = "io.quarkus:quarkus-smallrye-jwt" }
+quarkus-reactive-routes = { module = "io.quarkus:quarkus-reactive-routes" }
+
+# AWS SDK v2
+quarkus-amazon-s3 = { module = "io.quarkiverse.amazonservices:quarkus-amazon-s3" }
+aws-url-connection-client = { module = "software.amazon.awssdk:url-connection-client" }
+
+# Google Cloud Storage
+google-cloud-storage = { module = "com.google.cloud:google-cloud-storage", version.ref = "google-cloud-storage" }
+
+# Revet IAM
+revet-iam-permission = { module = "com.revethq.iam:revet-permission", version.ref = "revet-iam" }
+revet-iam-permission-persistence-runtime = { module = "com.revethq.iam:revet-permission-persistence-runtime", version.ref = "revet-iam" }
+revet-iam-permission-web = { module = "com.revethq.iam:revet-permission-web", version.ref = "revet-iam" }
+revet-iam-user = { module = "com.revethq.iam:revet-user", version.ref = "revet-iam" }
+revet-iam-user-persistence-runtime = { module = "com.revethq.iam:revet-user-persistence-runtime", version.ref = "revet-iam" }
+revet-iam-user-web = { module = "com.revethq.iam:revet-user-web", version.ref = "revet-iam" }
+
+# Jakarta
+jakarta-enterprise-cdi-api = { module = "jakarta.enterprise:jakarta.enterprise.cdi-api", version.ref = "jakarta-cdi" }
+jakarta-inject-api = { module = "jakarta.inject:jakarta.inject-api", version.ref = "jakarta-inject" }
+jakarta-ws-rs-api = { module = "jakarta.ws.rs:jakarta.ws.rs-api", version.ref = "jakarta-ws-rs" }
+jakarta-annotation-api = { module = "jakarta.annotation:jakarta.annotation-api", version.ref = "jakarta-annotation" }
+jakarta-transaction-api = { module = "jakarta.transaction:jakarta.transaction-api", version.ref = "jakarta-transaction" }
+
+# MicroProfile
+microprofile-openapi-api = { module = "org.eclipse.microprofile.openapi:microprofile-openapi-api", version.ref = "microprofile-openapi" }
+
+# Build
+jandex = { module = "io.smallrye:jandex", version.ref = "jandex" }
+
+# Testing
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+quarkus-junit5 = { module = "io.quarkus:quarkus-junit5" }
+rest-assured = { module = "io.rest-assured:rest-assured" }
+
+[plugins]
+quarkus = { id = "io.quarkus", version.ref = "quarkus" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-allopen = { id = "org.jetbrains.kotlin.plugin.allopen", version.ref = "kotlin" }
+ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }

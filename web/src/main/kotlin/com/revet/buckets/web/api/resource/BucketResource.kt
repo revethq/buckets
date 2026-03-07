@@ -1,0 +1,195 @@
+package com.revet.buckets.web.api.resource
+
+import com.revet.buckets.permission.Actions
+import com.revet.buckets.service.BucketService
+import com.revet.buckets.web.api.mapper.BucketDTOMapper
+import com.revet.buckets.web.dto.BucketDTO
+import com.revet.buckets.web.dto.CreateBucketRequest
+import com.revet.buckets.web.dto.UpdateBucketRequest
+import com.revethq.iam.permission.web.filter.RequiresPermission
+import jakarta.inject.Inject
+import jakarta.ws.rs.Consumes
+import jakarta.ws.rs.DELETE
+import jakarta.ws.rs.GET
+import jakarta.ws.rs.POST
+import jakarta.ws.rs.PUT
+import jakarta.ws.rs.Path
+import jakarta.ws.rs.PathParam
+import jakarta.ws.rs.Produces
+import jakarta.ws.rs.QueryParam
+import jakarta.ws.rs.core.MediaType
+import jakarta.ws.rs.core.Response
+import org.eclipse.microprofile.openapi.annotations.Operation
+import org.eclipse.microprofile.openapi.annotations.media.Content
+import org.eclipse.microprofile.openapi.annotations.media.Schema
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponses
+import org.eclipse.microprofile.openapi.annotations.tags.Tag
+import java.util.UUID
+
+@Path("/api/v1/buckets")
+@Produces(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON)
+@Tag(name = "Buckets", description = "Storage bucket configuration endpoints")
+class BucketResource
+    @Inject
+    constructor(
+        private val bucketService: BucketService,
+    ) {
+        @GET
+        @RequiresPermission(action = Actions.Bucket.LIST, resource = "urn:revet:buckets:{tenantId}:bucket/*")
+        @Operation(summary = "List all buckets", description = "Retrieve a list of all active bucket configurations")
+        @APIResponses(
+            APIResponse(
+                responseCode = "200",
+                description = "List of buckets",
+                content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = BucketDTO::class))],
+            ),
+            APIResponse(responseCode = "403", description = "Insufficient permissions"),
+        )
+        fun listBuckets(
+            @QueryParam("includeInactive")
+            @Parameter(description = "Include inactive buckets")
+            includeInactive: Boolean = false,
+        ): List<BucketDTO> =
+            bucketService
+                .getAllBuckets(includeInactive)
+                .map { BucketDTOMapper.toDTO(it) }
+
+        @GET
+        @Path("/{uuid}")
+        @RequiresPermission(action = Actions.Bucket.GET, resource = "urn:revet:buckets:{tenantId}:bucket/{uuid}")
+        @Operation(summary = "Get bucket by UUID", description = "Retrieve a single bucket configuration by its UUID")
+        @APIResponses(
+            APIResponse(
+                responseCode = "200",
+                description = "Bucket found",
+                content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = BucketDTO::class))],
+            ),
+            APIResponse(responseCode = "404", description = "Bucket not found"),
+            APIResponse(responseCode = "403", description = "Insufficient permissions"),
+        )
+        fun getBucket(
+            @PathParam("uuid")
+            @Parameter(description = "Bucket UUID")
+            uuid: UUID,
+        ): Response {
+            val bucket =
+                bucketService.getBucketByUuid(uuid)
+                    ?: return Response
+                        .status(Response.Status.NOT_FOUND)
+                        .entity(mapOf("error" to "Bucket not found"))
+                        .build()
+
+            return Response.ok(BucketDTOMapper.toDTO(bucket)).build()
+        }
+
+        @POST
+        @RequiresPermission(action = Actions.Bucket.CREATE, resource = "urn:revet:buckets:{tenantId}:bucket/*")
+        @Operation(summary = "Create bucket", description = "Create a new bucket configuration")
+        @APIResponses(
+            APIResponse(
+                responseCode = "201",
+                description = "Bucket created",
+                content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = BucketDTO::class))],
+            ),
+            APIResponse(responseCode = "400", description = "Invalid request"),
+            APIResponse(responseCode = "403", description = "Insufficient permissions"),
+        )
+        fun createBucket(request: CreateBucketRequest): Response =
+            try {
+                val bucket =
+                    bucketService.createBucket(
+                        name = request.name,
+                        provider = request.provider,
+                        bucketName = request.bucketName,
+                        accessKey = request.accessKey,
+                        secretKey = request.secretKey,
+                        endpoint = request.endpoint,
+                        region = request.region,
+                        presignedUrlDurationMinutes = request.presignedUrlDurationMinutes,
+                    )
+
+                Response
+                    .status(Response.Status.CREATED)
+                    .entity(BucketDTOMapper.toDTO(bucket))
+                    .build()
+            } catch (e: IllegalArgumentException) {
+                Response
+                    .status(Response.Status.BAD_REQUEST)
+                    .entity(mapOf("error" to e.message))
+                    .build()
+            }
+
+        @PUT
+        @Path("/{uuid}")
+        @RequiresPermission(action = Actions.Bucket.UPDATE, resource = "urn:revet:buckets:{tenantId}:bucket/{uuid}")
+        @Operation(summary = "Update bucket", description = "Update an existing bucket configuration")
+        @APIResponses(
+            APIResponse(
+                responseCode = "200",
+                description = "Bucket updated",
+                content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = BucketDTO::class))],
+            ),
+            APIResponse(responseCode = "404", description = "Bucket not found"),
+            APIResponse(responseCode = "400", description = "Invalid request"),
+            APIResponse(responseCode = "403", description = "Insufficient permissions"),
+        )
+        fun updateBucket(
+            @PathParam("uuid")
+            @Parameter(description = "Bucket UUID")
+            uuid: UUID,
+            request: UpdateBucketRequest,
+        ): Response {
+            return try {
+                val bucket =
+                    bucketService.updateBucketByUuid(
+                        uuid = uuid,
+                        name = request.name,
+                        bucketName = request.bucketName,
+                        endpoint = request.endpoint,
+                        region = request.region,
+                        accessKey = request.accessKey,
+                        secretKey = request.secretKey,
+                        presignedUrlDurationMinutes = request.presignedUrlDurationMinutes,
+                        isActive = request.isActive,
+                    ) ?: return Response
+                        .status(Response.Status.NOT_FOUND)
+                        .entity(mapOf("error" to "Bucket not found"))
+                        .build()
+
+                Response.ok(BucketDTOMapper.toDTO(bucket)).build()
+            } catch (e: IllegalArgumentException) {
+                Response
+                    .status(Response.Status.BAD_REQUEST)
+                    .entity(mapOf("error" to e.message))
+                    .build()
+            }
+        }
+
+        @DELETE
+        @Path("/{uuid}")
+        @RequiresPermission(action = Actions.Bucket.DELETE, resource = "urn:revet:buckets:{tenantId}:bucket/{uuid}")
+        @Operation(summary = "Delete bucket", description = "Soft delete a bucket configuration")
+        @APIResponses(
+            APIResponse(responseCode = "204", description = "Bucket deleted"),
+            APIResponse(responseCode = "404", description = "Bucket not found"),
+            APIResponse(responseCode = "403", description = "Insufficient permissions"),
+        )
+        fun deleteBucket(
+            @PathParam("uuid")
+            @Parameter(description = "Bucket UUID")
+            uuid: UUID,
+        ): Response {
+            val deleted = bucketService.deleteBucketByUuid(uuid)
+            return if (deleted) {
+                Response.noContent().build()
+            } else {
+                Response
+                    .status(Response.Status.NOT_FOUND)
+                    .entity(mapOf("error" to "Bucket not found"))
+                    .build()
+            }
+        }
+    }
