@@ -20,7 +20,7 @@ buildscript {
 
 allprojects {
     group = "com.revethq.buckets"
-    version = "0.1.0"
+    version = "0.1.1"
 
     repositories {
         mavenCentral()
@@ -31,10 +31,8 @@ subprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
     apply(plugin = "org.jlleitschuh.gradle.ktlint")
 
-    if (project.name != "web") {
-        apply(plugin = "java-library")
-        apply(plugin = "maven-publish")
-    }
+    apply(plugin = "java-library")
+    apply(plugin = "maven-publish")
 
     configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
         version.set("1.8.0")
@@ -44,10 +42,8 @@ subprojects {
         toolchain {
             languageVersion.set(JavaLanguageVersion.of(25))
         }
-        if (project.name != "web") {
-            withJavadocJar()
-            withSourcesJar()
-        }
+        withJavadocJar()
+        withSourcesJar()
     }
 
     configure<org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension> {
@@ -61,50 +57,48 @@ subprojects {
         useJUnitPlatform()
     }
 
-    if (project.name != "web") {
-        tasks.withType<GenerateModuleMetadata> {
-            suppressedValidationErrors.add("enforced-platform")
-        }
+    tasks.withType<GenerateModuleMetadata> {
+        suppressedValidationErrors.add("enforced-platform")
+    }
 
-        configure<PublishingExtension> {
-            publications {
-                create<MavenPublication>("maven") {
-                    artifactId = "revet-buckets-${project.name}"
-                    from(components["java"])
+    configure<PublishingExtension> {
+        publications {
+            create<MavenPublication>("maven") {
+                artifactId = "revet-buckets-${project.name}"
+                from(components["java"])
 
-                    pom {
-                        name.set("Revet Buckets - ${project.name}")
-                        description.set("Revet Buckets ${project.name} module")
+                pom {
+                    name.set("Revet Buckets - ${project.name}")
+                    description.set("Revet Buckets ${project.name} module")
+                    url.set("https://github.com/revethq/buckets")
+                    inceptionYear.set("2025")
+
+                    licenses {
+                        license {
+                            name.set("The Apache License, Version 2.0")
+                            url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
+                        }
+                    }
+
+                    developers {
+                        developer {
+                            id.set("your-id")
+                            name.set("Your Name")
+                        }
+                    }
+
+                    scm {
                         url.set("https://github.com/revethq/buckets")
-                        inceptionYear.set("2025")
-
-                        licenses {
-                            license {
-                                name.set("The Apache License, Version 2.0")
-                                url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
-                            }
-                        }
-
-                        developers {
-                            developer {
-                                id.set("your-id")
-                                name.set("Your Name")
-                            }
-                        }
-
-                        scm {
-                            url.set("https://github.com/revethq/buckets")
-                            connection.set("scm:git:git://github.com/revethq/buckets.git")
-                            developerConnection.set("scm:git:ssh://git@github.com/revethq/buckets.git")
-                        }
+                        connection.set("scm:git:git://github.com/revethq/buckets.git")
+                        developerConnection.set("scm:git:ssh://git@github.com/revethq/buckets.git")
                     }
                 }
             }
+        }
 
-            repositories {
-                maven {
-                    url = uri(layout.buildDirectory.dir("staging-deploy"))
-                }
+        repositories {
+            maven {
+                url = uri(layout.buildDirectory.dir("staging-deploy"))
             }
         }
     }
@@ -182,6 +176,7 @@ jreleaser {
                     stagingRepository("provider-s3/build/staging-deploy")
                     stagingRepository("provider-gcs/build/staging-deploy")
                     stagingRepository("provider-azure-blob/build/staging-deploy")
+                    stagingRepository("web/build/staging-deploy")
                 }
             }
         }

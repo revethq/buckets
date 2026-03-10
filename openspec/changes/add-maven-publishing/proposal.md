@@ -5,11 +5,10 @@ The project has no `publish` task. Library modules (core, persistence-runtime, p
 
 ## What Changes
 - Add `jreleaser` plugin (v1.22.0) to version catalog and root build script
-- Add `maven-publish` and `java-library` plugins to publishable subprojects
-- Configure POM metadata (license, SCM, developer info) for all library modules
+- Add `maven-publish` and `java-library` plugins to all subprojects (including `web`)
+- Configure POM metadata (license, SCM, developer info) for all modules
 - Configure JReleaser for GPG signing, GitHub releases, and Sonatype Maven Central deployment
 - Generate javadoc and source JARs for published modules
-- `web` module is excluded from publishing (it is the application, not a library)
 
 ## Impact
 - Affected specs: maven-publishing (new)
